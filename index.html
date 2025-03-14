@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doedle</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script defer src="wordle.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- Login-Fenster -->
+<div id="loginScreen">
+    <h1>Welcome to <span class="highlight">Doedle</span></h1>
+
+    <div class="login-container">
+        <input id="nickname" type="text" placeholder="Username" maxlength="12">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="loginUser()">Login</button>
+        <button onclick="registerUser()">Register</button>
+    </div>
+
+    <!-- Spielerliste unter den Login-Feldern -->
+    <h3>Players Online</h3>
+    <div id="playersList"></div>
+    <footer id="footer">
+        <p>Created by <span class="highlight">Marmor</span></p>
+    </footer>
+</div>
+
+<!-- Haupt-Spielbereich -->
+<div id="game" style="display: none;">
+    <!-- Linke Spalte: Spielerliste -->
+    <div id="sidePanel">
+        <h3>Players Online</h3>
+        <div id="players">
+            <ul id="playerList"></ul>
+        </div>
+    </div>
+
+    <!-- Mitte: Spielfeld & Tastatur -->
+    <div id="gameContainer">
+        <div id="boardContainer">
+            <table id="board"></table>
+        </div>
+        <div id="keyboard"></div>
+    </div>
+
+    <!-- Rechte Spalte: Bestenliste (Oben rechts) -->
+    <div id="leaderboard">
+        <h3>TOP PLAYERS</h3>
+        <ul id="leaderboardList"></ul>
+    </div>
+
+    <!-- Rechte Spalte: Chat (Unten rechts) -->
+    <div id="chatPanel">
+        <h3>Chat</h3>
+        <div id="chatMessages"></div>
+        <input type="text" id="chatInput" placeholder="Type in Message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <!-- ❓ Need Help? Hinweis -->
+    <div id="helpHint">
+        Need Help? <br> ↓
+    </div>
+
+<!-- Admin-Bereich (nur für Marmor) -->
+<div id="adminPanel" style="display: none;">
+   <button id="toggleKickList">Kick Users</button>
+    <div id="userList" class="hidden">
+          <h3>Registered Users</h3>
+          <ul id="userListContent"></ul>
+          <button id="hideKickList">Hide List</button>
+    </div>
+</div>
+
+
+
+</div>
+<!-- ❓ Hilfe-Button unten links -->
+<div id="helpBox">
+    🇩🇪
+    <div id="helpText">
+        <h3>Wie das Spiel funktioniert</h3>
+        <p>
+            Logge dich ein oder registriere dich, um gegen andere Spieler anzutreten. Dein Ziel ist es, ein geheimes Wort zu erraten.
+            Gib Buchstaben über die Tastatur ein und bestätige dein Wort mit Enter.
+        </p>
+        <p>
+            Nach jedem Versuch werden die Buchstaben markiert: <b>Grün</b> = richtig platziert, <b>Gelb</b> = falsche Position, <b>Grau</b> = nicht im Wort.
+            Du hast <b>10 Versuche</b> pro Wort. Errätst du es, bekommst du <b>2 Punkte + Bonuspunkte für die übrigen Versuche.</b>
+        </p>
+        <p>
+            Nutze clevere Strategien und steige in der <b>Bestenliste</b> auf. Viel Spaß – werde der beste Wortdetektiv! 🚀
+        </p>
+    </div>
+</div>
+
+<div id="helpBox2">
+    🇬🇧
+    <div id="helpText2">
+        <h3>How the Game Works</h3>
+        <p>
+            Doedle is a multiplayer game where each player gets a random hidden word.
+            After logging in or registering, you can start guessing by entering a valid word with the correct number of letters and pressing Enter.
+        </p>
+        <p>
+            The colors will guide you — green means the letter is correct and in the right position,
+            yellow means the letter is correct but in the wrong place, and gray means the letter is not in the word.
+        </p>
+        <p>
+            Try to guess the word in as few attempts as possible to earn points and climb the leaderboard. Keep playing, improve your score, and become the Doedle champion! 🚀
+        </p>
+    </div>
+</div>
+
+</body>
+</html>

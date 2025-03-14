@@ -1,0 +1,488 @@
+/* Allgemeines Layout */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+/* Login-Feld */
+#nicknameInput {
+    margin-top: 20px;
+    text-align: center;
+}
+/* 🎨 Login-Bildschirm verschönern */
+#loginScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+}
+
+/* ✨ Überschrift schöner machen */
+#loginScreen h1 {
+    font-family: 'Poppins', sans-serif; /* Moderne Schriftart */
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.no-players {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+    padding: 10px;
+}
+
+.highlight {
+    color: #0077ff; /* Blaue Akzentfarbe */
+}
+
+/* 📥 Login-Felder und Buttons anpassen */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+}
+#footer {
+    position: absolute;
+    bottom: 20px;
+    text-align: center;
+    width: 100%;
+    font-size: 16px;
+    color: #666;
+    font-family: 'Poppins', sans-serif;
+}
+
+#footer .highlight {
+    color: #0077ff; /* Blaue Akzentfarbe */
+    font-weight: bold;
+}
+
+.login-container input {
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.login-container button {
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.login-container button:first-of-type {
+    background: #0077ff;
+    color: white;
+}
+
+.login-container button:last-of-type {
+    background: #28a745;
+    color: white;
+}
+
+.login-container button:hover {
+    opacity: 0.8;
+}
+
+/* Hauptspielbereich */
+#game {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 90%;
+    max-width: 1200px;
+    margin-top: 20px;
+}
+
+/* Linke Spalte: Spieler-Liste */
+#sidePanel {
+    width: 18%;
+    min-width: 200px;
+    text-align: left;
+    padding: 10px;
+    margin-right: 20px; /* Abstand zur Mitte */
+}
+
+#players {
+    background: white;
+    padding: 15px;
+    border: 2px solid black;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    min-width: 220px;
+    max-height: 200px; /* Begrenzte Höhe */
+    overflow-y: auto;  /* Scrollbar hinzufügen */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+
+/* Spielerliste unter dem Chat */
+#playersList {
+    margin-top: 20px;
+    padding: 10px;
+    background: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    min-width: 250px;
+    text-align: left;
+}
+
+#playersList li, #playerList li {
+    list-style: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: #0077ff; /* Blaue Akzentfarbe */
+    text-align: center;
+}
+
+
+/* Mitte: Spielfeld & Tastatur */
+#gameContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50%; /* Verkleinert den Platz, damit es mittig ist */
+    margin: 0 auto; /* Zentriert */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#boardContainer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+/* Wordle-Spielfeld */
+#board {
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+#board td {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    vertical-align: middle;
+    border: 2px solid black;
+    font-size: 20px;
+    font-weight: bold;
+    background: white;
+    transition: background-color 0.3s ease;
+}
+
+/* Tastatur */
+#keyboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 600px; /* Bisschen schmaler, damit es passt */
+}
+
+.key {
+    margin: 3px;
+    padding: 10px;
+    border: 2px solid black;
+    cursor: pointer;
+    width: 50px; /* Breitere Tasten */
+    text-align: center;
+    background-color: white;
+    transition: background-color 0.3s ease;
+    height: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.key[data-key="Enter"], .key[data-key="Backspace"] {
+    width: 100px;
+}
+
+/* Farben für richtige und falsche Buchstaben */
+.success {
+    background-color: green !important;
+    color: white;
+}
+
+.partial {
+    background-color: yellow !important;
+    color: black;
+}
+
+.fail {
+    background-color: gray !important;
+    color: white;
+}
+
+.key.success {
+    background-color: green;
+}
+
+.key.partial {
+    background-color: yellow;
+}
+
+.key.fail {
+    background-color: gray;
+}
+
+/* 📜 Bestenliste bleibt oben rechts */
+#leaderboard {
+    width: 250px;
+    padding: 12px;
+    background: white;
+    border: 3px solid gold;
+    border-radius: 12px;
+    box-shadow: 4px 4px 12px rgba(255, 215, 0, 0.4);
+    text-align: center;
+    position: absolute;
+    top: 80px; /* Fixiert oben rechts */
+    right: 90px;
+}
+
+/* 💬 Chat bleibt unten rechts */
+#chatPanel {
+    width: 250px;
+    padding: 12px;
+    background: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    position: absolute;
+    bottom: 20px; /* Fixiert unten rechts */
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ✅ Chat Nachrichten-Feld */
+#chatMessages {
+    width: 230px;
+    height: 120px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid black;
+    padding: 5px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+/* ✅ Chat-Eingabe */
+#chatInput {
+    width: 200px;
+    padding: 5px;
+    font-size: 14px;
+}
+
+#chatPanel button {
+    width: 100%;
+    padding: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* 📜 Bestenliste Titel größer & epischer */
+#leaderboard h3 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #DAA520; /* Goldene Farbe */
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 4px rgba(218, 165, 32, 0.8);
+}
+
+/* 🏆 Bestenliste Format */
+#leaderboardList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#leaderboardList li {
+    font-size: 16px;
+    padding: 6px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: black;
+}
+
+/* 🥇🥈🥉 Emoji & Farben für die Top 3 */
+#leaderboardList li:nth-child(1) { color: gold; font-size: 18px; }
+#leaderboardList li:nth-child(2) { color: silver; }
+#leaderboardList li:nth-child(3) { color: #cd7f32; /* Bronze */ }
+
+/* ❓ Hilfe-Button unten links */
+#helpBox {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 2px solid black;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 📜 Hilfe-Text versteckt, erscheint beim Hovern */
+#helpText {
+    display: none;
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    width: 280px;
+    background: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 🖱 Hilfe-Text erscheint, wenn man über die Box fährt */
+#helpBox:hover #helpText {
+    display: block;
+}
+
+#helpBox2 {
+    position: absolute;
+    bottom: 20px;
+    left: 70px;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 2px solid black;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 📜 Hilfe-Text versteckt, erscheint beim Hovern */
+#helpText2 {
+    display: none;
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    width: 280px;
+    background: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 🖱 Hilfe-Text erscheint, wenn man über die Box fährt */
+#helpBox2:hover #helpText2 {
+    display: block;
+}
+/* 🆘 Need Help? Hinweis */
+#helpHint {
+    position: absolute;
+    bottom: 80px;
+    left: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: black;
+    text-align: center;
+    background: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+/* Admin-Panel unter dem Chat */
+/* Kick Users Button unter den Chat setzen */
+#adminPanel {
+    position: absolute;
+    bottom: -50px; /* Noch weiter nach unten */
+    right: 20px;
+    text-align: center;
+}
+
+
+#toggleKickList {
+    background: red;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+
+#userList {
+    display: none;
+    background: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    max-width: 250px;
+    text-align: left;
+}
+
+#userList h3 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#userList ul {
+    list-style: none;
+    padding: 0;
+}
+
+#userList li {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+.kick-button {
+    background: red;
+    color: white;
+    border: none;
+    padding: 3px 6px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 3px;
+}
