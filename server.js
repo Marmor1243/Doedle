@@ -20,6 +20,7 @@ app.use(session({
     saveUninitialized: false,
 }));
 
+
 const path = require('path');
 
 // Statische Dateien aus dem "public" Ordner bereitstellen
@@ -28,6 +29,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Fallback-Route für alle nicht definierten Routen
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+db.all(`SELECT * FROM users`, [], (err, rows) => {
+    if (err) {
+        console.error("Fehler beim Laden der Benutzer-Tabelle:", err);
+    } else {
+        console.log("Datenbank enthält Benutzer:", rows);
+    }
 });
 
 const words = fs.readFileSync('words.txt').toString().split("\n");
@@ -184,10 +193,15 @@ app.post('/login', (req, res) => {
 // Bestenliste abrufen
 app.get('/leaderboard', (req, res) => {
     db.all(`SELECT nickname, points FROM users ORDER BY points DESC LIMIT 5`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: "Error retrieving leaderboard" });
+        if (err) {
+            console.error("Fehler beim Abrufen der Bestenliste:", err);
+            return res.status(500).json({ error: "Error retrieving leaderboard" });
+        }
+        console.log("Bestenliste:", rows); // Debug-Ausgabe in Render Logs
         res.json(rows);
     });
 });
+
 
 function checkGuess(guess, selectedWord) {
     const result = [];
@@ -238,10 +252,15 @@ app.post('/admin/kick', (req, res) => {
 
 app.get('/getUsers', (req, res) => {
     db.all(`SELECT id, nickname FROM users`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: "Error retrieving users" });
+        if (err) {
+            console.error("Fehler beim Abrufen der Benutzer:", err);
+            return res.status(500).json({ error: "Error retrieving users" });
+        }
+        console.log("Benutzerliste:", rows); // Debugging in Render Logs
         res.json(rows);
     });
 });
+
 
 
 app.post('/kickUser', (req, res) => {
