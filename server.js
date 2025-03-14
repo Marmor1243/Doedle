@@ -270,7 +270,8 @@ app.post('/kickUser', (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;  // Ändere 10000 zu 3000 als Fallback
 server.listen(PORT, () => {
     console.log(`Server läuft auf Port ${PORT}`);
 });
+
