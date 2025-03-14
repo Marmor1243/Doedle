@@ -20,6 +20,16 @@ app.use(session({
     saveUninitialized: false,
 }));
 
+const path = require('path');
+
+// Statische Dateien aus dem "public" Ordner bereitstellen
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Fallback-Route für alle nicht definierten Routen
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 const words = fs.readFileSync('words.txt').toString().split("\n");
 const players = {};
 
