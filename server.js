@@ -5,6 +5,8 @@ const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const db = require('./database');
+const loggedInUsers = new Set();
+
 
 const app = express();
 const server = http.createServer(app);
@@ -141,9 +143,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('Spieler hat das Spiel verlassen:', socket.id);
+    const player = players[socket.id];
+    if (player) {
+        console.log(`🚪 Spieler ${player.nickname} hat das Spiel verlassen.`);
+        loggedInUsers.delete(player.nickname); // ❗ Entferne User aus der Liste
         delete players[socket.id];
         io.emit('updatePlayers', Object.values(players));
+        }
     });
 });
 
@@ -180,6 +186,11 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
     const { nickname, password } = req.body;
 
+    // 🔥 Check: Ist der User bereits eingeloggt?
+    if (loggedInUsers.has(nickname)) {
+        return res.status(400).json({ error: "User is already logged in!" });
+    }
+
     db.get(`SELECT * FROM users WHERE nickname = ?`, [nickname], (err, user) => {
         if (err) return res.status(500).json({ error: "Error getting user" });
         if (!user) return res.status(400).json({ error: "User not found" });
@@ -190,8 +201,10 @@ app.post('/login', (req, res) => {
                 req.session.username = user.nickname;  // 🟢 Speichere Admin-Name
                 req.session.save(); // Speichert die Session sicher
 
-                console.log(`✅ Benutzer eingeloggt: ${user.nickname} (ID: ${user.id})`); // DEBUG
+                // ✅ Benutzer als "eingeloggt" markieren
+                loggedInUsers.add(nickname);
 
+                console.log(`✅ Benutzer eingeloggt: ${user.nickname} (ID: ${user.id})`); // DEBUG
                 res.json({ message: "Login successful!", userId: user.id, points: user.points });
             } else {
                 res.status(401).json({ error: "Incorrect password" });
@@ -199,6 +212,7 @@ app.post('/login', (req, res) => {
         });
     });
 });
+
 
 
 // Bestenliste abrufen
