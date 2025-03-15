@@ -23,13 +23,16 @@ app.use(session({
 
 const path = require('path');
 
-// Statische Dateien aus dem "public" Ordner bereitstellen
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Fallback-Route für alle nicht definierten Routen
-app.get('*', (req, res) => {
+// NUR statische Dateien bedienen
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ❗ Fallback-Route nur für ungültige Pfade
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 
 db.all(`SELECT * FROM users`, [], (err, rows) => {
     if (err) {
