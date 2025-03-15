@@ -197,7 +197,7 @@ app.get('/leaderboard', (req, res) => {
             console.error("Fehler beim Abrufen der Bestenliste:", err);
             return res.status(500).json({ error: "Error retrieving leaderboard" });
         }
-        console.log("Bestenliste:", rows); // Debug-Ausgabe in Render Logs
+        console.log("Bestenliste:", rows);
         res.json(rows);
     });
 });
@@ -256,7 +256,7 @@ app.get('/getUsers', (req, res) => {
             console.error("Fehler beim Abrufen der Benutzer:", err);
             return res.status(500).json({ error: "Error retrieving users" });
         }
-        console.log("Benutzerliste:", rows); // Debugging in Render Logs
+        console.log("Benutzerliste:", rows);
         res.json(rows);
     });
 });
