@@ -292,28 +292,33 @@ function sendMessage() {
 // Bestenliste abrufen und anzeigen
 function updateLeaderboard() {
     console.log("Lade Bestenliste...");
+console.log("📢 Lade Bestenliste...");
 fetch('/leaderboard')
     .then(response => response.json())
     .then(players => {
-        console.log("Bestenliste erhalten:", players);
-            const leaderboardList = document.getElementById('leaderboardList');
-            leaderboardList.innerHTML = ""; // Bestehende Liste leeren
+        console.log("🏆 Bestenliste erhalten:", players);
+        const leaderboardList = document.getElementById('leaderboardList');
+        if (!leaderboardList) {
+            console.error("❌ leaderboardList nicht gefunden!");
+            return;
+        }
+        leaderboardList.innerHTML = "";
 
-            if (players.length === 0) {
-                leaderboardList.innerHTML = "<li>No players in the leaderboard yet</li>";
-                return;
-            }
+        if (players.length === 0) {
+            leaderboardList.innerHTML = "<li>No players in the leaderboard yet</li>";
+            return;
+        }
 
-            // Pokal-Emojis 🏆🥈🥉 für die Top 3
-            const trophies = ["🏆", "🥈", "🥉", "4️⃣", "5️⃣"];
+        // 🏆 Pokale für die Top 5 Spieler
+        const trophies = ["🏆", "🥈", "🥉", "4️⃣", "5️⃣"];
+        players.forEach((player, index) => {
+            const playerEntry = document.createElement('li');
+            playerEntry.innerHTML = `${trophies[index]} <strong>${player.nickname}</strong>: ${player.points} Punkte`;
+            leaderboardList.appendChild(playerEntry);
+        });
+    })
+    .catch(error => console.error("❌ Fehler beim Laden der Bestenliste:", error));
 
-            players.forEach((player, index) => {
-                const playerEntry = document.createElement('li');
-                playerEntry.innerHTML = `${trophies[index]} <strong>${player.nickname}</strong>: ${player.points} Punkte`;
-                leaderboardList.appendChild(playerEntry);
-            });
-        })
-        .catch(error => console.error("Error loading leaderboard:", error));
 }
 
 setInterval(updateLeaderboard, 10000); // Alle 10 Sek. aktualisieren
@@ -374,21 +379,32 @@ document.getElementById('hideKickList').addEventListener('click', () => {
 // Lädt registrierte User aus der Datenbank
 function loadUserList() {
     console.log("Lade registrierte User...");
+console.log("📢 Lade registrierte User...");
 fetch('/getUsers')
     .then(response => response.json())
     .then(users => {
-        console.log("Registrierte User erhalten:", users);
+        console.log("📋 Registrierte User erhalten:", users);
 
-            const userList = document.getElementById('userListContent');
-            userList.innerHTML = "";
+        const userList = document.getElementById('userListContent');
+        if (!userList) {
+            console.error("❌ userListContent nicht gefunden!");
+            return;
+        }
+        userList.innerHTML = "";
 
-            users.forEach(user => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `${user.nickname} <button class="kick-button" onclick="kickUser('${user.nickname}')">Kick</button>`;
-                userList.appendChild(listItem);
-            });
-        })
-        .catch(error => console.error("Error loading users:", error));
+        if (users.length === 0) {
+            userList.innerHTML = "<li>No registered users found</li>";
+            return;
+        }
+
+        users.forEach(user => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `${user.nickname} <button class="kick-button" onclick="kickUser('${user.nickname}')">Kick</button>`;
+            userList.appendChild(listItem);
+        });
+    })
+    .catch(error => console.error("❌ Fehler beim Laden der Userliste:", error));
+
 }
 
 
