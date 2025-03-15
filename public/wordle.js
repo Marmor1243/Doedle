@@ -291,9 +291,11 @@ function sendMessage() {
 
 // Bestenliste abrufen und anzeigen
 function updateLeaderboard() {
-    fetch('/leaderboard')
-        .then(response => response.json())
-        .then(players => {
+    console.log("Lade Bestenliste...");
+fetch('/leaderboard')
+    .then(response => response.json())
+    .then(players => {
+        console.log("Bestenliste erhalten:", players);
             const leaderboardList = document.getElementById('leaderboardList');
             leaderboardList.innerHTML = ""; // Bestehende Liste leeren
 
@@ -371,9 +373,12 @@ document.getElementById('hideKickList').addEventListener('click', () => {
 // Lädt registrierte User aus der Datenbank
 // Lädt registrierte User aus der Datenbank
 function loadUserList() {
-    fetch('/getUsers')
-        .then(response => response.json())
-        .then(users => {
+    console.log("Lade registrierte User...");
+fetch('/getUsers')
+    .then(response => response.json())
+    .then(users => {
+        console.log("Registrierte User erhalten:", users);
+
             const userList = document.getElementById('userListContent');
             userList.innerHTML = "";
 
