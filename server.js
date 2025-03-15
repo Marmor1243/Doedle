@@ -39,6 +39,14 @@ db.all(`SELECT * FROM users`, [], (err, rows) => {
     }
 });
 
+db.all(`SELECT id, nickname, points FROM users`, [], (err, rows) => {
+    if (err) {
+        console.error("❌ Fehler beim Laden der Benutzer-Tabelle:", err);
+    } else {
+        console.log("📊 Aktuelle Benutzer in der Datenbank:", rows);
+    }
+});
+
 const words = fs.readFileSync('words.txt').toString().split("\n");
 const players = {};
 
