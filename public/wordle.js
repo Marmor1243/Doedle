@@ -46,6 +46,10 @@ function loginUser() {
         .catch(error => console.error("Login-Error:", error));
 }
 
+setTimeout(() => {
+    updateLeaderboard();
+    loadUserList();
+}, 2000);
 
 
 
@@ -479,6 +483,5 @@ document.addEventListener('keydown', (event) => {
 document.getElementById("board").addEventListener("click", () => {
     document.getElementById("chatInput").blur(); // Entfernt den Fokus vom Chat
 });
-
 
 
