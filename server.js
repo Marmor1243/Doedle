@@ -192,15 +192,17 @@ app.post('/login', (req, res) => {
 
 // Bestenliste abrufen
 app.get('/leaderboard', (req, res) => {
+    console.log("📢 API-Request: /leaderboard"); // DEBUG
     db.all(`SELECT nickname, points FROM users ORDER BY points DESC LIMIT 5`, [], (err, rows) => {
         if (err) {
-            console.error("Fehler beim Abrufen der Bestenliste:", err);
+            console.error("❌ Fehler beim Abrufen der Bestenliste:", err);
             return res.status(500).json({ error: "Error retrieving leaderboard" });
         }
-        console.log("Bestenliste:", rows);
+        console.log("🏆 Bestenliste geladen:", rows); // DEBUG
         res.json(rows);
     });
 });
+
 
 
 function checkGuess(guess, selectedWord) {
@@ -251,15 +253,17 @@ app.post('/admin/kick', (req, res) => {
 
 
 app.get('/getUsers', (req, res) => {
+    console.log("📢 API-Request: /getUsers"); // DEBUG
     db.all(`SELECT id, nickname FROM users`, [], (err, rows) => {
         if (err) {
-            console.error("Fehler beim Abrufen der Benutzer:", err);
+            console.error("❌ Fehler beim Abrufen der Benutzer:", err);
             return res.status(500).json({ error: "Error retrieving users" });
         }
-        console.log("Benutzerliste:", rows);
+        console.log("📋 Benutzerliste geladen:", rows); // DEBUG
         res.json(rows);
     });
 });
+
 
 
 
