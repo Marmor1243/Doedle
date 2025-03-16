@@ -173,59 +173,6 @@ io.on('connection', (socket) => {
     });
 });
 
-
-   socket.on('guess', (guess) => {
-    console.log("📨 Server hat einen Guess erhalten:", guess);  // DEBUG-LOG
-    const player = players[socket.id];
-    if (!player) {
-        console.log("⚠️ Spieler nicht gefunden!");
-        return;
-    }
-
-    console.log(`🎯 ${player.nickname} hat geraten: ${guess}`);
-
-    if (guess === player.selectedWord) {
-        let bonusPoints = Math.max(0, 10 - player.attempts);
-        player.points += 1 + bonusPoints;
-
-        // ✅ Punkte speichern
-        db.query(`UPDATE users SET points = $1 WHERE nickname = $2`, [player.points, player.nickname])
-            .then(() => console.log(`✅ Punkte von ${player.nickname} aktualisiert: ${player.points}`))
-            .catch(err => console.error("❌ Fehler beim Speichern der Punkte:", err));
-
-        player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
-        player.attempts = 0;
-
-        socket.emit('newWord', { wordLength: player.selectedWord.length, bonusPoints: bonusPoints });
-    } else {
-        const result = checkGuess(guess, player.selectedWord);
-        socket.emit('guessResult', { guess, result });
-        player.attempts++;
-
-        if (player.attempts >= 10) {
-            player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
-            player.attempts = 0;
-            socket.emit('newWord', { wordLength: player.selectedWord.length });
-        }
-    }
-
-    io.emit('updatePlayers', Object.values(players));
-});
-
-
-
-
-    socket.on('disconnect', () => {
-        const player = players[socket.id];
-        if (player) {
-            console.log(`🚪 Spieler ${player.nickname} hat das Spiel verlassen.`);
-            loggedInUsers.delete(player.nickname);
-            delete players[socket.id];
-            io.emit('updatePlayers', Object.values(players));
-        }
-    });
-});
-
 // 🟢 Registrierung
 app.post('/register', (req, res) => {
     const { nickname, password } = req.body;
