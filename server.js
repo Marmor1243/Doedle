@@ -33,12 +33,14 @@ const pgPool = new Pool({
 app.use(session({
     store: new pgSession({
         pool: pgPool,
-        tableName: 'session'
+        tableName: 'session',
+        createTableIfMissing: true // 🟢 Diese Zeile erstellt die Tabelle automatisch!
     }),
     secret: 'supersecretkey',
     resave: false,
     saveUninitialized: false,
 }));
+
 
 
 const path = require('path');
