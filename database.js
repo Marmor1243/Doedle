@@ -1,13 +1,15 @@
-require('dotenv').config();
+require('dotenv').config(); // 🚀 Lädt die Umgebungsvariablen
+
 const { Pool } = require('pg');
 
-// Erstelle eine Verbindung zur PostgreSQL-Datenbank mit der Render-Umgebungsvariable
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // Wichtig für Render-Postgres!
-    }
+  connectionString: process.env.DATABASE_URL, // Aus der .env-Datei
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
 });
+
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+};
 
 // Funktion zum Erstellen der Benutzertabelle (falls nicht vorhanden)
 async function initializeDatabase() {
