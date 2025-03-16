@@ -17,6 +17,19 @@ const io = socketIo(server, {
     }
 });
 
+function checkGuess(guess, selectedWord) {
+    const result = [];
+    for (let i = 0; i < guess.length; i++) {
+        if (guess[i] === selectedWord[i]) {
+            result.push('success'); // Richtiger Buchstabe an richtiger Stelle
+        } else if (selectedWord.includes(guess[i])) {
+            result.push('partial'); // Richtiger Buchstabe, aber falsche Stelle
+        } else {
+            result.push('fail'); // Falscher Buchstabe
+        }
+    }
+    return result;
+}
 
 app.use(express.static('public'));
 app.use(express.json());
