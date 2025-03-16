@@ -88,7 +88,6 @@ const getRandomColor = () => {
 io.on('connection', (socket) => {
     console.log('Neuer Spieler verbunden:', socket.id);
 
-    // 🟢 Event für Nickname setzen
     socket.on('setNickname', (nickname) => {
         if (!nickname) return;
 
@@ -101,7 +100,7 @@ io.on('connection', (socket) => {
                 players[socket.id] = {
                     id: socket.id,
                     nickname,
-                    points, 
+                    points,
                     selectedWord: playerWord,
                     attempts: 0,
                     color
@@ -118,22 +117,56 @@ io.on('connection', (socket) => {
             .catch(err => console.error("❌ Fehler beim Abrufen der Punkte:", err));
     });
 
-    // 🟢 Event für Chat-Nachrichten
     socket.on('chatMessage', (message) => {
         const player = players[socket.id];
-        if (!player) return; // Falls der Spieler nicht existiert, nichts tun
+        if (!player) return;
 
         console.log(`💬 Chat-Nachricht von ${player.nickname}: ${message}`);
-
-        // Sende die Nachricht an alle Clients
         io.emit('chatMessage', { nickname: player.nickname, message, color: player.color });
     });
 
-    // 🟢 Event für das Verlassen des Spiels
+    socket.on('guess', (guess) => {
+        console.log("📨 Server hat einen Guess erhalten:", guess);
+        const player = players[socket.id];
+        if (!player) {
+            console.log("⚠️ Spieler nicht gefunden!");
+            return;
+        }
+
+        console.log(`🎯 ${player.nickname} hat geraten: ${guess}`);
+
+        if (guess === player.selectedWord) {
+            let bonusPoints = Math.max(0, 10 - player.attempts);
+            player.points += 1 + bonusPoints;
+
+            db.query(`UPDATE users SET points = $1 WHERE nickname = $2`, [player.points, player.nickname])
+                .then(() => console.log(`✅ Punkte von ${player.nickname} aktualisiert: ${player.points}`))
+                .catch(err => console.error("❌ Fehler beim Speichern der Punkte:", err));
+
+            player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
+            player.attempts = 0;
+
+            socket.emit('newWord', { wordLength: player.selectedWord.length, bonusPoints: bonusPoints });
+        } else {
+            const result = checkGuess(guess, player.selectedWord);
+            socket.emit('guessResult', { guess, result });
+            player.attempts++;
+
+            if (player.attempts >= 10) {
+                player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
+                player.attempts = 0;
+                socket.emit('newWord', { wordLength: player.selectedWord.length });
+            }
+        }
+
+        io.emit('updatePlayers', Object.values(players));
+    });
+
     socket.on('disconnect', () => {
         const player = players[socket.id];
         if (player) {
             console.log(`🚪 Spieler ${player.nickname} hat das Spiel verlassen.`);
+            loggedInUsers.delete(player.nickname);
             delete players[socket.id];
             io.emit('updatePlayers', Object.values(players));
         }
