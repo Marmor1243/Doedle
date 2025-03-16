@@ -22,11 +22,24 @@ app.use(express.static('public'));
 app.use(express.json());
 
 // Session-Handling für Login
+const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg');
+
+const pgPool = new Pool({
+    connectionString: process.env.DATABASE_URL, // Stelle sicher, dass du die ENV-Variable gesetzt hast!
+    ssl: { rejectUnauthorized: false }
+});
+
 app.use(session({
+    store: new pgSession({
+        pool: pgPool,
+        tableName: 'session'
+    }),
     secret: 'supersecretkey',
     resave: false,
     saveUninitialized: false,
 }));
+
 
 const path = require('path');
 
@@ -126,6 +139,7 @@ io.on('connection', (socket) => {
 
     io.emit('updatePlayers', Object.values(players));
 });
+
 
 
 
