@@ -88,6 +88,7 @@ const getRandomColor = () => {
 io.on('connection', (socket) => {
     console.log('Neuer Spieler verbunden:', socket.id);
 
+    // 🟢 Event für Nickname setzen
     socket.on('setNickname', (nickname) => {
         if (!nickname) return;
 
@@ -116,6 +117,29 @@ io.on('connection', (socket) => {
             })
             .catch(err => console.error("❌ Fehler beim Abrufen der Punkte:", err));
     });
+
+    // 🟢 Event für Chat-Nachrichten
+    socket.on('chatMessage', (message) => {
+        const player = players[socket.id];
+        if (!player) return; // Falls der Spieler nicht existiert, nichts tun
+
+        console.log(`💬 Chat-Nachricht von ${player.nickname}: ${message}`);
+
+        // Sende die Nachricht an alle Clients
+        io.emit('chatMessage', { nickname: player.nickname, message, color: player.color });
+    });
+
+    // 🟢 Event für das Verlassen des Spiels
+    socket.on('disconnect', () => {
+        const player = players[socket.id];
+        if (player) {
+            console.log(`🚪 Spieler ${player.nickname} hat das Spiel verlassen.`);
+            delete players[socket.id];
+            io.emit('updatePlayers', Object.values(players));
+        }
+    });
+});
+
 
    socket.on('guess', (guess) => {
     console.log("📨 Server hat einen Guess erhalten:", guess);  // DEBUG-LOG
