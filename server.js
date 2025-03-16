@@ -84,40 +84,42 @@ io.on('connection', (socket) => {
     });
 
     socket.on('guess', (guess) => {
-        const player = players[socket.id];
-        if (!player) return;
+    const player = players[socket.id];
+    if (!player) return;
 
-        if (!words.includes(guess.trim().toLowerCase())) {
-            socket.emit('invalidWord', "This word is not in the list!");
-            return;
-        }
+    if (!words.includes(guess.trim().toLowerCase())) {
+        socket.emit('invalidWord', "This word is not in the list!");
+        return;
+    }
 
-        if (guess === player.selectedWord) {
-            let bonusPoints = Math.max(0, 10 - player.attempts);
-            player.points += 1 + bonusPoints;
+    if (guess === player.selectedWord) {
+        let bonusPoints = Math.max(0, 10 - player.attempts);
+        player.points += 1 + bonusPoints;
 
-            // ✅ Punkte in PostgreSQL speichern
-            db.query(`UPDATE users SET points = $1 WHERE nickname = $2`, [player.points, player.nickname])
-                .then(() => console.log(`✅ Punkte von ${player.nickname} aktualisiert: ${player.points}`))
-                .catch(err => console.error("❌ Fehler beim Speichern der Punkte:", err));
+        // ✅ Punkte speichern
+        db.query(`UPDATE users SET points = $1 WHERE nickname = $2`, [player.points, player.nickname])
+            .then(() => console.log(`✅ Punkte von ${player.nickname} aktualisiert: ${player.points}`))
+            .catch(err => console.error("❌ Fehler beim Speichern der Punkte:", err));
 
+        player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
+        player.attempts = 0;
+
+        socket.emit('newWord', { wordLength: player.selectedWord.length, bonusPoints: bonusPoints });
+    } else {
+        const result = checkGuess(guess, player.selectedWord);
+        socket.emit('guessResult', { guess, result });
+        player.attempts++;
+
+        if (player.attempts >= 10) {
             player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
             player.attempts = 0;
-
-            socket.emit('newWord', { wordLength: player.selectedWord.length, bonusPoints: bonusPoints });
-        } else {
-            const result = checkGuess(guess, player.selectedWord);
-            socket.emit('guessResult', { guess, result });
-            player.attempts++;
-
-            if (player.attempts >= 10) {
-                player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
-                player.attempts = 0;
-                socket.emit('newWord', { wordLength: player.selectedWord.length });
-            }
+            socket.emit('newWord', { wordLength: player.selectedWord.length });
         }
-        io.emit('updatePlayers', Object.values(players));
-    });
+    }
+
+    io.emit('updatePlayers', Object.values(players));
+});
+
 
     socket.on('disconnect', () => {
         const player = players[socket.id];
