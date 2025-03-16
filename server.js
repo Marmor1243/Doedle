@@ -10,7 +10,13 @@ const loggedInUsers = new Set();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: {
+        origin: "*", // Falls du eine spezifische URL hast, setze sie hier
+        methods: ["GET", "POST"]
+    }
+});
+
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -83,14 +89,17 @@ io.on('connection', (socket) => {
             .catch(err => console.error("❌ Fehler beim Abrufen der Punkte:", err));
     });
 
-    socket.on('guess', (guess) => {
+   socket.on('guess', (guess) => {
+    console.log("📨 Server hat einen Guess erhalten:", guess);  // DEBUG-LOG
     const player = players[socket.id];
-    if (!player) return;
-
-    if (!words.includes(guess.trim().toLowerCase())) {
-        socket.emit('invalidWord', "This word is not in the list!");
+    if (!player) {
+        console.log("⚠️ Spieler nicht gefunden!");
         return;
     }
+
+    console.log(`🎯 ${player.nickname} hat geraten: ${guess}`);
+});
+
 
     if (guess === player.selectedWord) {
         let bonusPoints = Math.max(0, 10 - player.attempts);
@@ -178,9 +187,23 @@ app.post('/login', (req, res) => {
 
 // 🏆 Bestenliste abrufen
 app.get('/leaderboard', (req, res) => {
+    console.log("📢 API-Request: /leaderboard");
     db.query(`SELECT nickname, points FROM users ORDER BY points DESC LIMIT 5`)
+        .then(result => {
+            console.log("🏆 Bestenliste geladen:", result.rows); // Debug-Log
+            res.json(result.rows);
+        })
+        .catch(err => {
+            console.error("❌ Fehler beim Abrufen der Bestenliste:", err);
+            res.status(500).json({ error: "Error retrieving leaderboard" });
+        });
+});
+
+
+app.get('/getUsers', (req, res) => {
+    db.query(`SELECT id, nickname FROM users`)
         .then(result => res.json(result.rows))
-        .catch(err => res.status(500).json({ error: "Error retrieving leaderboard" }));
+        .catch(err => res.status(500).json({ error: "Error retrieving users" }));
 });
 
 // 🔥 Server starten
