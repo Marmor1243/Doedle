@@ -4,7 +4,8 @@ const socketIo = require('socket.io');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
-const db = require('./database');
+const { getDbConnection } = require('./database');
+const db = getDbConnection();
 const loggedInUsers = new Set();
 
 
@@ -36,21 +37,10 @@ app.get('/', (req, res) => {
 });
 
 
-db.all(`SELECT * FROM users`, [], (err, rows) => {
-    if (err) {
-        console.error("Fehler beim Laden der Benutzer-Tabelle:", err);
-    } else {
-        console.log("Datenbank enthält Benutzer:", rows);
-    }
-});
+db.query(`SELECT id, nickname, points FROM users`)
+    .then(result => console.log("📊 Aktuelle Benutzer in der Datenbank:", result.rows))
+    .catch(err => console.error("❌ Fehler beim Laden der Benutzer-Tabelle:", err));
 
-db.all(`SELECT id, nickname, points FROM users`, [], (err, rows) => {
-    if (err) {
-        console.error("❌ Fehler beim Laden der Benutzer-Tabelle:", err);
-    } else {
-        console.log("📊 Aktuelle Benutzer in der Datenbank:", rows);
-    }
-});
 
 const words = fs.readFileSync('words.txt').toString().split("\n");
 const players = {};
@@ -72,8 +62,10 @@ io.on('connection', (socket) => {
     socket.on('setNickname', (nickname) => {
     if (!nickname) return;
 
-    db.get(`SELECT points FROM users WHERE nickname = ?`, [nickname], (err, row) => {
-        const points = row ? row.points : 0; // Falls neuer User, starte mit 0 Punkten
+    db.query(`SELECT points FROM users WHERE nickname = $1`, [nickname])
+    .then(result => {
+        const points = result.rows.length > 0 ? result.rows[0].points : 0;
+
 
         const playerWord = words[Math.floor(Math.random() * words.length)].trim();
         const color = getRandomColor();
@@ -111,12 +103,9 @@ io.on('connection', (socket) => {
         player.points += 1 + bonusPoints; // 1 Punkt für das Erraten + Bonuspunkte
 
         // **🔥 SPEICHERE die Punkte in der Datenbank!**
-        db.run(`UPDATE users SET points = ? WHERE nickname = ?`, [player.points, player.nickname], (err) => {
-            if (err) {
-                console.error("❌ Fehler beim Speichern der Punkte:", err);
-            } else {
-                console.log(`✅ Punkte von ${player.nickname} aktualisiert: ${player.points}`);
-            }
+       db.query(`UPDATE users SET points = $1 WHERE nickname = $2`, [player.points, player.nickname])
+    .then(() => console.log(`✅ Punkte von ${player.nickname} aktualisiert: ${player.points}`))
+    .catch(err => console.error("❌ Fehler beim Speichern der Punkte:", err));
         });
 
         player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
@@ -176,9 +165,9 @@ app.post('/register', (req, res) => {
         bcrypt.hash(password, 10, (err, hash) => {
             if (err) return res.status(500).json({ error: "Error hashing password" });
 
-            db.run(`INSERT INTO users (nickname, password, points) VALUES (?, ?, 0)`, [nickname, hash], function(err) {
-                if (err) return res.status(500).json({ error: "Error saving user" });
-                res.json({ message: "Registration successful!", userId: this.lastID });
+            db.query(`INSERT INTO users (nickname, password, points) VALUES ($1, $2, 0) RETURNING id`, [nickname, hash])
+    .then(result => res.json({ message: "Registration successful!", userId: result.rows[0].id }))
+    .catch(err => res.status(500).json({ error: "Error saving user" }));
             });
         });
     });
@@ -195,9 +184,11 @@ app.post('/login', (req, res) => {
         return res.status(400).json({ error: "User is already logged in!" });
     }
 
-    db.get(`SELECT * FROM users WHERE nickname = ?`, [nickname], (err, user) => {
-        if (err) return res.status(500).json({ error: "Error getting user" });
+   db.query(`SELECT * FROM users WHERE nickname = $1`, [nickname])
+    .then(result => {
+        const user = result.rows[0];
         if (!user) return res.status(400).json({ error: "User not found" });
+
 
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
@@ -222,10 +213,10 @@ app.post('/login', (req, res) => {
 // Bestenliste abrufen
 app.get('/leaderboard', (req, res) => {
     console.log("📢 API-Request: /leaderboard"); // DEBUG
-    db.all(`SELECT nickname, points FROM users ORDER BY points DESC LIMIT 5`, [], (err, rows) => {
-        if (err) {
-            console.error("❌ Fehler beim Abrufen der Bestenliste:", err);
-            return res.status(500).json({ error: "Error retrieving leaderboard" });
+    db.query(`SELECT nickname, points FROM users ORDER BY points DESC LIMIT 5`)
+    .then(result => res.json(result.rows))
+    .catch(err => res.status(500).json({ error: "Error retrieving leaderboard" }));
+
         }
         console.log("🏆 Bestenliste geladen:", rows); // DEBUG
         res.json(rows);
