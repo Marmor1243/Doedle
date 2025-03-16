@@ -193,14 +193,16 @@ function createKeyboard() {
 
 // Verarbeitet Tastatureingaben (Check: Ist Chat aktiv?)
 function handleKey(key) {
-    if (document.activeElement === chatInput) return; // Verhindert Spielfeld-Eingabe, wenn Chat aktiv ist
-
-    if (isProcessingGuess) return; // Blockiert weitere Eingaben, bis Server antwortet
+    if (document.activeElement === chatInput) return;
+    if (isProcessingGuess) return;
 
     if (key === 'Enter') {
         if (currentGuess.length === wordLength) {
+            console.log("📩 Sende Guess an Server:", currentGuess);  // DEBUG-LOG
             socket.emit('guess', currentGuess);
-            isProcessingGuess = true; // Blockiert weitere Eingaben
+            isProcessingGuess = true;
+        } else {
+            console.log("⚠️ Nicht genug Buchstaben eingegeben!");
         }
     } else if (key === 'Backspace') {
         currentGuess = currentGuess.slice(0, -1);
@@ -209,6 +211,7 @@ function handleKey(key) {
     }
     updateBoard();
 }
+
 
 // Aktualisiert das Spielfeld mit dem aktuellen Wortversuch
 function updateBoard() {
