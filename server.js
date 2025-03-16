@@ -98,8 +98,6 @@ io.on('connection', (socket) => {
     }
 
     console.log(`🎯 ${player.nickname} hat geraten: ${guess}`);
-});
-
 
     if (guess === player.selectedWord) {
         let bonusPoints = Math.max(0, 10 - player.attempts);
@@ -128,6 +126,7 @@ io.on('connection', (socket) => {
 
     io.emit('updatePlayers', Object.values(players));
 });
+
 
 
     socket.on('disconnect', () => {
