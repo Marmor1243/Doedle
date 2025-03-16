@@ -1,50 +1,39 @@
-const sqlite3 = require('sqlite3').verbose();
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const db = new sqlite3.Database('./database.sqlite', (err) => {
-    if (err) {
-        console.error("Fehler beim Verbinden zur Datenbank:", err.message);
-    } else {
-        console.log("Verbindung zur SQLite-Datenbank erfolgreich!");
+// Erstelle eine Verbindung zur PostgreSQL-Datenbank mit der Render-Umgebungsvariable
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Wichtig für Render-Postgres!
     }
 });
 
-// Benutzertabelle ERZWUNGEN erstellen, falls sie nicht existiert
-db.serialize(() => {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-                                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                             nickname TEXT UNIQUE NOT NULL,
-                                             password TEXT NOT NULL,
-                                             points INTEGER DEFAULT 0
-        )
-    `, (err) => {
-        if (err) {
-            console.error("Fehler beim Erstellen der Benutzertabelle:", err.message);
-        } else {
-            console.log("Benutzertabelle erfolgreich erstellt oder existiert bereits.");
-        }
-    });
-});
-
-// Falls es doch ein Problem gibt, Tabelle neu erstellen
-function resetDatabase() {
-    db.serialize(() => {
-        db.run("DROP TABLE IF EXISTS users");
-        db.run(`
-            CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+// Funktion zum Erstellen der Benutzertabelle (falls nicht vorhanden)
+async function initializeDatabase() {
+    try {
+        const client = await pool.connect();
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
                 nickname TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 points INTEGER DEFAULT 0
-            )
-        `, (err) => {
-            if (err) {
-                console.error("Fehler beim Neuerstellen der Benutzertabelle:", err.message);
-            } else {
-                console.log("Benutzertabelle wurde neu erstellt!");
-            }
-        });
-    });
+            );
+        `);
+        console.log("✅ Benutzertabelle erfolgreich erstellt oder existiert bereits.");
+        client.release();
+    } catch (err) {
+        console.error("❌ Fehler beim Erstellen der Tabelle:", err.message);
+    }
 }
 
-module.exports = db;
+// Datenbank initialisieren
+initializeDatabase();
+
+// Funktion zum Abrufen der Datenbankverbindung
+function getDbConnection() {
+    return pool;
+}
+
+module.exports = { getDbConnection };
