@@ -70,71 +70,75 @@ io.on('connection', (socket) => {
     console.log('Neuer Spieler verbunden:', socket.id);
 
     socket.on('setNickname', (nickname) => {
-        if (!nickname) return;
+    if (!nickname) return;
 
-        // Hole Punkte aus der Datenbank
-        db.get(`SELECT points FROM users WHERE nickname = ?`, [nickname], (err, row) => {
-            const points = row ? row.points : 0;
+    db.get(`SELECT points FROM users WHERE nickname = ?`, [nickname], (err, row) => {
+        const points = row ? row.points : 0; // Falls neuer User, starte mit 0 Punkten
 
-            const playerWord = words[Math.floor(Math.random() * words.length)].trim();
-            const color = getRandomColor();
-            players[socket.id] = {
-                id: socket.id,
-                nickname,
-                points,
-                selectedWord: playerWord,
-                attempts: 0,
-                color
-            };
+        const playerWord = words[Math.floor(Math.random() * words.length)].trim();
+        const color = getRandomColor();
+        players[socket.id] = {
+            id: socket.id,
+            nickname,
+            points, // ✅ Punkte aus der Datenbank holen
+            selectedWord: playerWord,
+            attempts: 0,
+            color
+        };
 
-            console.log(`${nickname} ist beigetreten. Wortlänge: ${playerWord.length}, Punkte: ${points}`);
+        console.log(`${nickname} ist beigetreten. Punkte: ${points}`);
 
-            // Sende das Spiel-Event an den Client
-            socket.emit('gameState', {
-                player: players[socket.id],
-                wordLength: players[socket.id].selectedWord.length
-            });
-            io.emit('updatePlayers', Object.values(players));
+        socket.emit('gameState', {
+            player: players[socket.id],
+            wordLength: players[socket.id].selectedWord.length
         });
-    });
-
-    socket.on('guess', (guess) => {
-        const player = players[socket.id];
-        if (!player) return;
-
-        if (!words.includes(guess.trim().toLowerCase())) {
-            socket.emit('invalidWord', "This word is not in the list!");
-            return;
-        }
-
-        if (guess === player.selectedWord) {
-            let bonusPoints = Math.max(0, 10 - player.attempts); // Stellt sicher, dass es nicht negativ wird
-            player.points += 1 + bonusPoints; // 1 Punkt für das Erraten + Bonuspunkte
-
-            // Punkte in der Datenbank speichern
-            db.run(`UPDATE users SET points = ? WHERE nickname = ?`, [player.points, player.nickname], (err) => {
-                if (err) {
-                    console.error("Fehler beim Speichern der Punkte:", err);
-                }
-            });
-
-            player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
-            player.attempts = 0;
-
-            socket.emit('newWord', { wordLength: player.selectedWord.length, bonusPoints: bonusPoints });
-            io.emit('updatePlayers', Object.values(players));
-        } else {
-            const result = checkGuess(guess, player.selectedWord);
-            socket.emit('guessResult', { guess, result });
-            player.attempts++;
-            if (player.attempts >= 10) {
-                player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
-                player.attempts = 0;
-                socket.emit('newWord', { wordLength: player.selectedWord.length });
-            }
-        }
         io.emit('updatePlayers', Object.values(players));
     });
+});
+
+
+    socket.on('guess', (guess) => {
+    const player = players[socket.id];
+    if (!player) return;
+
+    if (!words.includes(guess.trim().toLowerCase())) {
+        socket.emit('invalidWord', "This word is not in the list!");
+        return;
+    }
+
+    if (guess === player.selectedWord) {
+        let bonusPoints = Math.max(0, 10 - player.attempts);
+        player.points += 1 + bonusPoints; // 1 Punkt für das Erraten + Bonuspunkte
+
+        // **🔥 SPEICHERE die Punkte in der Datenbank!**
+        db.run(`UPDATE users SET points = ? WHERE nickname = ?`, [player.points, player.nickname], (err) => {
+            if (err) {
+                console.error("❌ Fehler beim Speichern der Punkte:", err);
+            } else {
+                console.log(`✅ Punkte von ${player.nickname} aktualisiert: ${player.points}`);
+            }
+        });
+
+        player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
+        player.attempts = 0;
+
+        socket.emit('newWord', { wordLength: player.selectedWord.length, bonusPoints: bonusPoints });
+        io.emit('updatePlayers', Object.values(players));
+    } else {
+        const result = checkGuess(guess, player.selectedWord);
+        socket.emit('guessResult', { guess, result });
+        player.attempts++;
+
+        if (player.attempts >= 10) {
+            player.selectedWord = words[Math.floor(Math.random() * words.length)].trim();
+            player.attempts = 0;
+            socket.emit('newWord', { wordLength: player.selectedWord.length });
+        }
+    }
+
+    io.emit('updatePlayers', Object.values(players));
+});
+
 
     socket.on('chatMessage', (message) => {
         const player = players[socket.id];
