@@ -238,6 +238,37 @@ app.get('/getUsers', (req, res) => {
         .catch(err => res.status(500).json({ error: "Error retrieving users" }));
 });
 
+// 🟢 Kick-User API-Endpoint
+app.post('/kickUser', (req, res) => {
+    const { nickname } = req.body;
+
+    if (!nickname) {
+        return res.status(400).json({ error: "No nickname provided!" });
+    }
+
+    // Benutzer aus der Datenbank entfernen
+    db.query(`DELETE FROM users WHERE nickname = $1`, [nickname])
+        .then(() => {
+            console.log(`❌ Benutzer ${nickname} wurde aus der Datenbank entfernt.`);
+
+            // Spieler aus dem Spiel entfernen
+            const socketId = Object.keys(players).find(id => players[id].nickname === nickname);
+            if (socketId) {
+                io.to(socketId).emit('kicked'); // Nachricht an den Client
+                io.sockets.sockets.get(socketId)?.disconnect(); // Verbindung trennen
+                delete players[socketId]; // Spieler aus dem Spiel entfernen
+            }
+
+            io.emit('updatePlayers', Object.values(players)); // Spieler-Liste aktualisieren
+            res.json({ success: true });
+        })
+        .catch(err => {
+            console.error(`❌ Fehler beim Kicken von ${nickname}:`, err);
+            res.status(500).json({ error: "Error kicking user" });
+        });
+});
+
+
 // 🔥 Server starten
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
