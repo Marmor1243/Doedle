@@ -416,8 +416,10 @@ fetch('/getUsers')
 
 
 // Sendet Kick-Befehl an den Server
+// Sendet Kick-Befehl an den Server
 function kickUser(nickname) {
     if (confirm(`Are you sure you want to kick ${nickname}?`)) {
+        console.log(`🚨 Kicking user: ${nickname}`); // Debug-Log
         fetch('/kickUser', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -432,9 +434,10 @@ function kickUser(nickname) {
                     alert("Error: " + data.error);
                 }
             })
-            .catch(error => console.error("Error kicking user:", error));
+            .catch(error => console.error("❌ Fehler beim Kicken:", error));
     }
 }
+
 
 
 // 📌 Gekickte User trennen
