@@ -37,7 +37,7 @@ function loginUser() {
                 // Spieler-Event senden
                 socket.emit('setNickname', nickname);
 
-                // ✅ Admin-Check NUR für den eigenen Nutzer ausführen!
+                // Admin-Check NUR für den eigenen Nutzer ausführen!
                 setTimeout(() => {
                     checkAdmin(nickname);
                 }, 1000);
@@ -130,8 +130,8 @@ socket.on('updatePlayers', (players) => {
 
 socket.on("kicked", () => {
     alert("You have been kicked by the admin.");
-    socket.disconnect(); // ❗❗ Trennt die Verbindung zum Server
-    location.reload();   // ❗❗ Leitet zurück zum Login-Screen
+    socket.disconnect(); //  Trennt die Verbindung zum Server
+    location.reload();   //  Leitet zurück zum Login-Screen
 });
 
 
